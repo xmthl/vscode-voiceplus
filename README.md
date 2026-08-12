@@ -1,6 +1,6 @@
 # VoicePlus
 
-VoicePlus is a private, Windows-only VS Code extension for spoken conversations with Copilot models. Milestone 1 provides an independent chat UI, offline English transcription, concise spoken summaries, and automatic voice turn-taking.
+VoicePlus is a private, Windows-only VS Code extension for spoken conversations with Copilot models. It provides an independent chat UI, offline English transcription, concise spoken summaries, automatic voice turn-taking, guarded workspace context, and user-approved coding actions.
 
 ## Requirements
 
@@ -36,8 +36,6 @@ VoicePlus does not send microphone audio to a speech service. Prompts and chat c
 - Automatic listen, respond, speak, and listen turn-taking
 - Speech interruption by pressing the microphone control or shortcut
 
-Additional attachment types, instruction discovery, and multiple conversations remain in Milestone 2. The approved edit and terminal-action foundation from Milestone 3 is implemented. Its design is recorded in the source tree's technical specification.
-
 ## Run From Source
 
 ```powershell
@@ -71,15 +69,17 @@ code --install-extension .\voiceplus-0.0.1.vsix
 
 - Audio is processed locally and never retained.
 - Telemetry is not collected.
-- Chat persistence is disabled by default.
-- Milestone 2 will exclude ignored and credential-like files unless explicitly approved.
+- Conversation history is held in memory and is not persisted.
+- Automatic workspace retrieval excludes credential-like paths and generated or dependency folders.
 
 ## Known Limitations
 
 - Only local Windows workspaces are supported.
 - The local model is downloaded from the pinned Sherpa-ONNX GitHub release on first use.
-- Workspace context and coding-agent tools are not implemented in Milestone 1.
-- The full response is plain text in the chat UI; rich Markdown rendering arrives with attachment and tool-result support.
+- The full response is rendered as plain text in the chat UI.
 - Explicit attachments currently support UTF-8 text up to 200 KB; folders, images, diagnostics, and terminal output are not implemented yet.
+- VoicePlus currently has one in-memory conversation; named conversations and persisted history are not implemented yet.
+- Personal instructions and instruction-file discovery are not wired into model prompts yet.
+- Model capability checks, vision fallback, and context compaction are not implemented yet.
 - Automatic workspace retrieval is read-only, requires Workspace Trust, excludes sensitive paths and generated/dependency folders, and limits files to 200 KB.
 - Workspace changes and terminal commands require Workspace Trust and remain pending until approved. Safe-command auto-run resets when VS Code reloads.

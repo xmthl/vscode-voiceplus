@@ -38,7 +38,7 @@ flowchart LR
     Tools --> Terminal[Dedicated VoicePlus terminal]
 ```
 
-The extension host owns WASAPI microphone capture, silence detection, model access, conversation state, model installation, transcription, speech playback, permissions, and future workspace tools. Sidebar and editor webviews receive snapshots from one controller rather than maintaining independent conversations. Extension webviews do not request microphone permission because VS Code's stable webview permission policy does not grant `media` access.
+The extension host owns WASAPI microphone capture, silence detection, model access, conversation state, model installation, transcription, speech playback, permissions, and workspace tools. Sidebar and editor webviews receive snapshots from one controller rather than maintaining independent conversations. Extension webviews do not request microphone permission because VS Code's stable webview permission policy does not grant `media` access.
 
 ## Voice State Machine
 
@@ -60,7 +60,7 @@ The microphone stream is closed before transcription, model work, and playback. 
 
 ## Local Speech
 
-Milestone 1 uses:
+The local speech stack uses:
 
 - `sherpa-onnx` 1.13.5 WebAssembly runtime
 - `@picovoice/pvrecorder-node` 1.2.9 with its prebuilt Windows x64 native recorder
@@ -83,11 +83,9 @@ The runtime ships inside the VSIX. The model downloads only after modal consent,
 - Conversation-scoped command auto-approve resets when the conversation or VS Code closes.
 - Git pushes, elevation, and destructive commands remain outside auto-approve.
 
-## Delivery Milestones
+## Implementation Status
 
-### Milestone 1: Voice Conversation
-
-Status: implemented.
+### Voice Conversation: Implemented
 
 - Custom sidebar and expanded editor chat
 - Copilot model discovery, selection, and fallback
@@ -98,37 +96,43 @@ Status: implemented.
 - Automatic turn-taking and interruption
 - VSIX-ready production bundle
 
-### Milestone 2: Workspace Context
+### Workspace Context: Partially Implemented
 
-Status: in progress. Explicit text attachments, automatic active-editor context, and guarded read-only workspace list/search/read tools are implemented with visible source labels.
+Implemented:
+
+- Active-selection, active-file, and chosen UTF-8 text-file attachments
+- Automatic context from the active editor, including unsaved buffers
+- Targeted workspace file listing, exact-text search, and file reads using VS Code workspace APIs
+- Sensitive-path filtering and generated/dependency-folder exclusions for automatic retrieval
+- Visible source labels for explicit, automatic, and tool-retrieved context
+
+Planned:
 
 - Multiple named conversations with one voice-session owner
-- Active selection and explicit file, folder, image, text, diagnostic, and terminal attachments
-- Targeted file search/read tools using VS Code workspace APIs (implemented)
-- Ignore rules and sensitive-file approval
-- `AGENTS.md` and Copilot instruction-file discovery
-- Personal instructions
-- Collapsible tool activity and context audit trail
+- Folder, image, diagnostic, and terminal-output attachments
+- Git ignore integration and explicit approval for sensitive-file access
+- `AGENTS.md`, Copilot instruction-file, and personal-instruction discovery
+- Collapsible tool activity
 - Model capability checks and vision-model fallback
 - Context compaction while preserving the visible transcript
 - Optional per-workspace conversation persistence
 
-### Milestone 3: Approved Actions
+The `voiceplus.instructions` and `voiceplus.chat.persistHistory` settings are declared in the extension manifest but are not connected to the controller yet.
 
-Status: implemented.
+### Approved Actions: Implemented
 
-- Proposed edit batches with plain-language plans and expandable diffs (implemented)
-- Voice, typed, and button approval bound to an immutable batch ID (implemented)
-- Workspace edits and one-click undo where later changes do not conflict (implemented)
-- Dedicated visible VoicePlus terminal with captured, collapsible output (implemented)
-- Separately approved command batches and conversation-scoped auto-approve (implemented for the current single conversation)
-- Dangerous-command policy and Git-specific restrictions (implemented)
-- Post-edit test/build/lint proposals and result summaries (implemented through command batches)
-- Explicit Stop Task behavior for models, tools, and running commands (implemented)
+- Proposed edit batches with plain-language plans and expandable diffs
+- Voice, typed, and button approval bound to an immutable batch ID
+- Workspace edits and one-click undo where later changes do not conflict
+- Dedicated visible VoicePlus terminal with captured, collapsible output
+- Separately approved command batches and conversation-scoped auto-approve for the current single conversation
+- Dangerous-command policy and Git-specific restrictions
+- Post-edit test/build/lint proposals and result summaries through command batches
+- Explicit Stop Task behavior for models, tools, and running commands
 
 ## Acceptance Checks
 
-Each milestone must produce an installable VSIX and pass:
+Each release must produce an installable VSIX and pass:
 
 1. Type-check, lint, production bundle, and extension-host tests.
 2. Light and dark theme visual checks in sidebar and editor layouts.
