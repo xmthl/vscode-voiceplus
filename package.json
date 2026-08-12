@@ -1,0 +1,162 @@
+{
+  "name": "voiceplus",
+  "displayName": "VoicePlus",
+  "description": "A local-first conversational voice coding assistant for VS Code.",
+  "publisher": "voiceplus-private",
+  "private": true,
+  "license": "UNLICENSED",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.125.0"
+  },
+  "categories": [
+    "AI",
+    "Chat"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "voiceplus",
+          "title": "VoicePlus",
+          "icon": "media/voiceplus.svg"
+        }
+      ]
+    },
+    "views": {
+      "voiceplus": [
+        {
+          "id": "voiceplus.chatView",
+          "name": "VoicePlus Chat",
+          "type": "webview"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "voiceplus.openChat",
+        "title": "VoicePlus: Open Expanded Chat",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "voiceplus.toggleVoiceSession",
+        "title": "VoicePlus: Toggle Voice Session",
+        "icon": "$(unmute)"
+      },
+      {
+        "command": "voiceplus.toggleListening",
+        "title": "VoicePlus: Toggle Listening",
+        "icon": "$(mic)"
+      },
+      {
+        "command": "voiceplus.stopResponse",
+        "title": "VoicePlus: Stop Response",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "voiceplus.installSpeechModel",
+        "title": "VoicePlus: Install Local Speech Model"
+      },
+      {
+    "command": "voiceplus.selectVoice",
+    "title": "VoicePlus: Select Voice"
+    },
+    {
+        "command": "voiceplus.selectMicrophone",
+        "title": "VoicePlus: Select Microphone"
+    },
+    {
+    "command": "voiceplus.attachContext",
+    "title": "VoicePlus: Attach Workspace Context",
+    "icon": "$(attach)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "voiceplus.toggleListening",
+        "key": "ctrl+alt+v"
+      }
+    ],
+    "configuration": {
+      "title": "VoicePlus",
+      "properties": {
+        "voiceplus.speech.voice": {
+          "type": "string",
+          "default": "",
+          "description": "Windows voice used for spoken responses. Empty uses the system default."
+        },
+        "voiceplus.speech.rate": {
+          "type": "number",
+          "default": 1,
+          "minimum": 0.5,
+          "maximum": 2,
+          "description": "Spoken response speed."
+        },
+        "voiceplus.speech.silenceMs": {
+          "type": "number",
+          "default": 1200,
+          "minimum": 500,
+          "maximum": 5000,
+          "description": "Silence duration that completes a spoken turn."
+        },
+        "voiceplus.speech.microphone": {
+          "type": "string",
+          "default": "",
+          "description": "Microphone used by VoicePlus. Empty uses the Windows default input."
+        },
+        "voiceplus.chat.persistHistory": {
+          "type": "boolean",
+          "default": false,
+          "description": "Persist conversation history in the current workspace. Audio is never retained."
+        },
+        "voiceplus.instructions": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Personal instructions applied to VoicePlus conversations."
+        }
+      }
+    }
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Untrusted workspaces allow chat with explicit attachments only. Workspace search, edits, and commands are disabled."
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && npm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "24.x",
+    "@types/vscode": "^1.125.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.0.0",
+    "esbuild": "^0.28.1",
+    "eslint": "^10.5.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.1"
+  },
+  "overrides": {
+    "diff": "^8.0.4",
+    "serialize-javascript": "^7.0.6"
+  },
+  "dependencies": {
+    "@picovoice/pvrecorder-node": "^1.2.9",
+    "sherpa-onnx": "^1.13.5"
+  }
+}
