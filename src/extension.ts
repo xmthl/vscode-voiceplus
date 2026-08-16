@@ -6,7 +6,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		controller,
-		vscode.window.registerWebviewViewProvider('voiceplus.chatView', controller),
+		vscode.window.registerWebviewViewProvider('voiceplus.chatView', controller, {
+			webviewOptions: { retainContextWhenHidden: true },
+		}),
 		vscode.commands.registerCommand('voiceplus.openChat', () => controller.openEditor()),
 		vscode.commands.registerCommand('voiceplus.toggleVoiceSession', () => controller.toggleVoiceSession()),
 		vscode.commands.registerCommand('voiceplus.toggleListening', () => controller.toggleListening()),
@@ -15,6 +17,9 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('voiceplus.selectVoice', () => controller.selectVoice()),
 		vscode.commands.registerCommand('voiceplus.selectMicrophone', () => controller.selectMicrophone()),
 		vscode.commands.registerCommand('voiceplus.attachContext', () => controller.attachContext()),
+		vscode.commands.registerCommand('voiceplus.configureOpenAi', () => controller.configureOpenAi()),
+		vscode.commands.registerCommand('voiceplus.removeOpenAiKey', () => controller.removeOpenAiKey()),
+		vscode.commands.registerCommand('voiceplus.revokeOpenAiAccess', () => controller.revokeOpenAiAccess()),
 	);
 }
 

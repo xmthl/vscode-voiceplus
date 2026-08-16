@@ -40,6 +40,22 @@ export class LocalMicrophone {
 		return recorder.getSelectedDevice();
 	}
 
+	async startStreaming(
+		onFrame: (samples: Int16Array, sampleRate: number) => void,
+		onError: (error: unknown) => void,
+		preferredDevice = '',
+	): Promise<string> {
+		await this.cancel();
+		const devices = this.getDevices();
+		const deviceIndex = preferredDevice ? devices.indexOf(preferredDevice) : -1;
+		const recorder = new PvRecorder(frameLength, deviceIndex, bufferedFrames);
+		recorder.start();
+		this.recorder = recorder;
+		this.sampleRate = recorder.sampleRate;
+		this.capturePromise = this.stream(recorder, onFrame, onError);
+		return recorder.getSelectedDevice();
+	}
+
 	async finish(): Promise<MicrophoneRecording | undefined> {
 		if (!this.recorder) {
 			return undefined;
@@ -91,6 +107,28 @@ export class LocalMicrophone {
 						setImmediate(onSilence);
 					}
 				}
+			}
+		} catch (error) {
+			if (this.recorder === recorder) {
+				this.recorder = undefined;
+				if (recorder.isRecording) {recorder.stop();}
+				recorder.release();
+				this.capturePromise = undefined;
+				setImmediate(() => onError(error));
+			}
+		}
+	}
+
+	private async stream(
+		recorder: PvRecorder,
+		onFrame: (samples: Int16Array, sampleRate: number) => void,
+		onError: (error: unknown) => void,
+	): Promise<void> {
+		try {
+			while (this.recorder === recorder && recorder.isRecording) {
+				const frame = await recorder.read();
+				if (this.recorder !== recorder) {return;}
+				onFrame(Int16Array.from(frame), recorder.sampleRate);
 			}
 		} catch (error) {
 			if (this.recorder === recorder) {

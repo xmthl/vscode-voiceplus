@@ -5,7 +5,7 @@
   "publisher": "voiceplus-private",
   "private": true,
   "license": "UNLICENSED",
-  "version": "0.0.1",
+  "version": "0.0.6",
   "engines": {
     "vscode": "^1.125.0"
   },
@@ -71,6 +71,18 @@
     "command": "voiceplus.attachContext",
     "title": "VoicePlus: Attach Workspace Context",
     "icon": "$(attach)"
+      },
+      {
+        "command": "voiceplus.configureOpenAi",
+        "title": "VoicePlus: Configure OpenAI Realtime"
+      },
+      {
+        "command": "voiceplus.removeOpenAiKey",
+        "title": "VoicePlus: Remove OpenAI API Key"
+      },
+      {
+        "command": "voiceplus.revokeOpenAiAccess",
+        "title": "VoicePlus: Revoke OpenAI Workspace Access"
       }
     ],
     "keybindings": [
@@ -115,6 +127,53 @@
           "type": "string",
           "default": "",
           "markdownDescription": "Personal instructions applied to VoicePlus conversations."
+        },
+        "voiceplus.openai.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "machine",
+          "description": "Allow OpenAI Realtime integration on this machine. Disable this setting to enforce Microsoft/local speech only."
+        },
+        "voiceplus.openai.model": {
+          "type": "string",
+          "enum": ["gpt-realtime-2.1", "gpt-realtime-2.1-mini"],
+          "default": "gpt-realtime-2.1",
+          "description": "OpenAI Realtime model used to generate responses and speech."
+        },
+        "voiceplus.openai.voice": {
+          "type": "string",
+          "enum": ["marin", "cedar", "alloy", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse"],
+          "default": "marin",
+          "description": "OpenAI Realtime voice. Changing voice starts a new Realtime session."
+        },
+        "voiceplus.openai.tone": {
+          "type": "string",
+          "enum": ["casual", "professional", "custom"],
+          "default": "casual",
+          "description": "Speaking and response tone for OpenAI Realtime."
+        },
+        "voiceplus.openai.customTone": {
+          "type": "string",
+          "default": "",
+          "description": "Custom tone instructions used when OpenAI tone is set to custom."
+        },
+        "voiceplus.openai.language": {
+          "type": "string",
+          "default": "",
+          "description": "Response language for OpenAI Realtime. Empty follows the user's language."
+        },
+        "voiceplus.openai.contextMode": {
+          "type": "string",
+          "enum": ["activeEditor", "manualOnly"],
+          "default": "activeEditor",
+          "description": "Workspace context shared with OpenAI. Manual only sends explicitly attached context."
+        },
+        "voiceplus.openai.sessionSpendingLimitUsd": {
+          "type": "number",
+          "default": 5,
+          "minimum": 0,
+          "maximum": 1000,
+          "description": "Estimated OpenAI cost limit for the current VoicePlus session in USD. Zero disables the limit."
         }
       }
     }

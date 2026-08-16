@@ -8,6 +8,8 @@ import { isSensitiveWorkspacePath, WorkspaceContextBroker, workspaceTools } from
 import { WorkspaceActionBroker } from '../workspace/workspaceActionBroker';
 import { isCommandAutoApproveEligible, TerminalActionBroker } from '../workspace/terminalActionBroker';
 import { isApprovalPhrase } from '../workspace/actionTools';
+import { addOpenAiUsage, buildRealtimeInstructions, buildRealtimeSession, emptyOpenAiUsage } from '../openai/openAiRealtime';
+import { encodePcm16Base64, resamplePcm16 } from '../speech/realtimeAudio';
 
 suite('Extension Test Suite', () => {
 	test('registers the primary VoicePlus commands', async () => {
@@ -21,6 +23,91 @@ suite('Extension Test Suite', () => {
 		assert.ok(commands.includes('voiceplus.selectVoice'));
 		assert.ok(commands.includes('voiceplus.selectMicrophone'));
 		assert.ok(commands.includes('voiceplus.attachContext'));
+		assert.ok(commands.includes('voiceplus.configureOpenAi'));
+		assert.ok(commands.includes('voiceplus.removeOpenAiKey'));
+		assert.ok(commands.includes('voiceplus.revokeOpenAiAccess'));
+	});
+
+	test('builds a native speech-to-speech Realtime session with guarded workspace tools', () => {
+		const session = buildRealtimeSession({
+			model: 'gpt-realtime-2.1',
+			voice: 'marin',
+			tone: 'casual',
+			customTone: '',
+			language: '',
+		}) as {
+			output_modalities: string[];
+			tracing: unknown;
+			audio: {
+				input: {
+					format: { type: string; rate: number };
+					transcription: { model: string };
+					turn_detection: { type: string; create_response: boolean; interrupt_response: boolean };
+				};
+				output: { voice: string };
+			};
+			tools: Array<{ name: string }>;
+		};
+
+		assert.deepStrictEqual(session.output_modalities, ['audio']);
+		assert.strictEqual(session.tracing, null);
+		assert.deepStrictEqual(session.audio.input.format, { type: 'audio/pcm', rate: 24_000 });
+		assert.strictEqual(session.audio.input.transcription.model, 'gpt-4o-mini-transcribe');
+		assert.deepStrictEqual(session.audio.input.turn_detection, {
+			type: 'semantic_vad',
+			create_response: true,
+			interrupt_response: true,
+		});
+		assert.strictEqual(session.audio.output.voice, 'marin');
+		assert.ok(session.tools.some((tool) => tool.name === 'voiceplus_read_workspace_file'));
+		assert.ok(session.tools.some((tool) => tool.name === 'voiceplus_propose_file_changes'));
+	});
+
+	test('uses custom Realtime tone instructions verbatim', () => {
+		const instructions = buildRealtimeInstructions({
+			model: 'gpt-realtime-2.1',
+			voice: 'cedar',
+			tone: 'custom',
+			customTone: 'Measured, candid, and lightly humorous.',
+			language: 'Canadian French',
+		});
+
+		assert.ok(instructions.includes('Measured, candid, and lightly humorous.'));
+		assert.ok(instructions.includes('Respond in Canadian French.'));
+	});
+
+	test('accumulates Realtime tokens and estimated cost without double-charging cached input', () => {
+		const usage = addOpenAiUsage(emptyOpenAiUsage(), {
+			inputTextTokens: 100,
+			inputAudioTokens: 50,
+			cachedTextTokens: 20,
+			cachedAudioTokens: 10,
+			outputTextTokens: 30,
+			outputAudioTokens: 40,
+		});
+
+		assert.deepStrictEqual({ ...usage, estimatedUsd: undefined }, {
+			inputTextTokens: 100,
+			inputAudioTokens: 50,
+			outputTextTokens: 30,
+			outputAudioTokens: 40,
+			cachedTokens: 30,
+			estimatedUsd: undefined,
+		});
+		assert.ok(Math.abs(usage.estimatedUsd - 0.004892) < Number.EPSILON);
+	});
+
+	test('converts native microphone PCM to OpenAI 24 kHz PCM16 chunks', () => {
+		const source = Int16Array.from([-32_768, -16_384, 0, 16_384, 32_767, 0]);
+		const converted = resamplePcm16(source, 16_000, 24_000);
+
+		assert.strictEqual(converted.length, 9);
+		assert.strictEqual(converted[0], source[0]);
+		assert.strictEqual(converted.at(-1), source.at(-1));
+		assert.deepStrictEqual(
+			Buffer.from(encodePcm16Base64(converted), 'base64'),
+			Buffer.from(converted.buffer),
+		);
 	});
 
 	test('prefers the explicit spoken summary', () => {
